@@ -2,6 +2,7 @@ import random
 import numpy as np
 import torch
 
+
 def set_rand_seed(seed):
     int_seed = int(seed)
     random.seed(int_seed)

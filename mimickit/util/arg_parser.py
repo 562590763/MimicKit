@@ -1,6 +1,7 @@
 import re as RE
 from util.logger import Logger
 
+
 class ArgParser(object):
     global_parser = None
 
@@ -15,14 +16,14 @@ class ArgParser(object):
     def load_args(self, arg_strs):
         succ = True
         vals = []
-        curr_key = ''
+        curr_key = ""
 
         for str in arg_strs:
             if not (self._is_comment(str)):
                 is_key = self._is_key(str)
-                if (is_key):
-                    if (curr_key != ''):
-                        if (curr_key not in self._table):
+                if is_key:
+                    if curr_key != "":
+                        if curr_key not in self._table:
                             self._table[curr_key] = vals
 
                     vals = []
@@ -30,8 +31,8 @@ class ArgParser(object):
                 else:
                     vals.append(str)
 
-        if (curr_key != ''):
-            if (curr_key not in self._table):
+        if curr_key != "":
+            if curr_key not in self._table:
                 self._table[curr_key] = vals
 
             vals = []
@@ -40,13 +41,13 @@ class ArgParser(object):
 
     def load_file(self, filename):
         succ = False
-        with open(filename, 'r') as file:
-            lines = RE.split(r'[\n\r]+', file.read())
+        with open(filename, "r") as file:
+            lines = RE.split(r"[\n\r]+", file.read())
             file.close()
 
             arg_strs = []
             for line in lines:
-                if (len(line) > 0 and not self._is_comment(line)):
+                if len(line) > 0 and not self._is_comment(line):
                     arg_strs += line.split()
 
             succ = self.load_args(arg_strs)
@@ -54,9 +55,9 @@ class ArgParser(object):
 
     def load_args_file(self, arg_strs, arg_file_key="arg_file"):
         succ = self.load_args(arg_strs)
-        if (succ):
-            arg_file = self.parse_string(arg_file_key, '')
-            if (arg_file != ''):
+        if succ:
+            arg_file = self.parse_string(arg_file_key, "")
+            if arg_file != "":
                 succ = self.load_file(arg_file)
                 assert succ, Logger.print("Failed to load args from: " + arg_file)
         return succ
@@ -64,7 +65,7 @@ class ArgParser(object):
     def has_key(self, key):
         return key in self._table
 
-    def parse_string(self, key, default=''):
+    def parse_string(self, key, default=""):
         str = default
         if self.has_key(key):
             str = self._table[key][0]
@@ -114,21 +115,20 @@ class ArgParser(object):
 
     def _is_comment(self, str):
         is_comment = False
-        if (len(str) > 0):
-            is_comment = str[0] == '#'
+        if len(str) > 0:
+            is_comment = str[0] == "#"
 
         return is_comment
-        
+
     def _is_key(self, str):
         is_key = False
-        if (len(str) >= 3):
-            is_key = str[0] == '-' and str[1] == '-'
+        if len(str) >= 3:
+            is_key = str[0] == "-" and str[1] == "-"
 
         return is_key
 
     def _parse_bool(self, str):
         val = False
-        if (str == 'true' or str == 'True' or str == '1' 
-            or str == 'T' or str == 't'):
+        if str == "true" or str == "True" or str == "1" or str == "T" or str == "t":
             val = True
         return val

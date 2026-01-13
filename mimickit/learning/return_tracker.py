@@ -2,7 +2,8 @@ import torch
 
 import envs.base_env as base_env
 
-class ReturnTracker():
+
+class ReturnTracker:
     def __init__(self, num_envs, device):
         self._episodes = 0
         self._mean_return = torch.zeros([1], device=device, dtype=torch.float32)
@@ -37,8 +38,8 @@ class ReturnTracker():
         return
 
     def update(self, reward, done):
-        assert(reward.shape == self._return_buf.shape)
-        assert(done.shape == self._return_buf.shape)
+        assert reward.shape == self._return_buf.shape
+        assert done.shape == self._return_buf.shape
 
         self._return_buf += reward
         self._ep_len_buf += 1
@@ -47,7 +48,7 @@ class ReturnTracker():
         reset_ids = reset_mask.nonzero(as_tuple=False).flatten()
         num_resets = len(reset_ids)
 
-        if (num_resets > 0):
+        if num_resets > 0:
             new_mean_return = torch.mean(self._return_buf[reset_ids])
             new_mean_ep_len = torch.mean(self._ep_len_buf[reset_ids].type(torch.float))
 

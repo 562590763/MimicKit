@@ -1,5 +1,6 @@
 import torch
 
+
 class DistributionCategoricalBuilder(torch.nn.Module):
     def __init__(self, in_size, out_size, init_output_scale=0.01):
         super().__init__()
@@ -8,7 +9,9 @@ class DistributionCategoricalBuilder(torch.nn.Module):
 
     def _build_params(self, in_size, out_size, init_output_scale):
         self._logit_net = torch.nn.Linear(in_size, out_size)
-        torch.nn.init.uniform_(self._logit_net.weight, -init_output_scale, init_output_scale)
+        torch.nn.init.uniform_(
+            self._logit_net.weight, -init_output_scale, init_output_scale
+        )
         return
 
     def forward(self, input):
@@ -22,7 +25,7 @@ class DistributionCategorical(torch.distributions.Categorical):
         logits = logits.unsqueeze(-2)
         super().__init__(logits=logits)
         return
-    
+
     @property
     def mode(self):
         arg_max = torch.argmax(self.logits, dim=-1)
@@ -36,7 +39,7 @@ class DistributionCategorical(torch.distributions.Categorical):
         logp = super().log_prob(x)
         logp = logp.squeeze(-1)
         return logp
-    
+
     def entropy(self):
         ent = super().entropy()
         ent = ent.squeeze(-1)

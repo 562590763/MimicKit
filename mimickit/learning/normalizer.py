@@ -4,10 +4,20 @@ import torch
 import util.mp_util as mp_util
 from util.logger import Logger
 
+
 class Normalizer(torch.nn.Module):
-    def __init__(self, shape, device, init_mean=None, init_std=None, min_std=1e-4, clip=np.inf, dtype=torch.float):
+    def __init__(
+        self,
+        shape,
+        device,
+        init_mean=None,
+        init_std=None,
+        min_std=1e-4,
+        clip=np.inf,
+        dtype=torch.float,
+    ):
         super().__init__()
-        
+
         self._min_var = min_std * min_std
         self._clip = clip
         self.dtype = dtype
@@ -26,17 +36,17 @@ class Normalizer(torch.nn.Module):
         return
 
     def update(self):
-        if (self._mean_sq is None):
+        if self._mean_sq is None:
             self._mean_sq = self._calc_mean_sq(self._mean, self._std)
-            
+
         self._new_count = mp_util.reduce_sum(self._new_count)
         mp_util.reduce_inplace_sum(self._new_sum)
         mp_util.reduce_inplace_sum(self._new_sum_sq)
-        
+
         new_count = self._new_count
         new_mean = self._new_sum / new_count
         new_mean_sq = self._new_sum_sq / new_count
-        
+
         new_total = self._count + new_count
         w_old = self._count.type(torch.float) / new_total.type(torch.float)
         w_new = float(new_count) / new_total.type(torch.float)
@@ -66,10 +76,13 @@ class Normalizer(torch.nn.Module):
 
     def set_mean_std(self, mean, std):
         shape = self.get_shape()
-        
-        assert mean.shape == shape and std.shape == shape, \
-            Logger.print("Normalizer shape mismatch, expecting size {:d}, but got {:d} and {:d}".format(shape, mean.shape, std.shape))
-        
+
+        assert mean.shape == shape and std.shape == shape, Logger.print(
+            "Normalizer shape mismatch, expecting size {:d}, but got {:d} and {:d}".format(
+                shape, mean.shape, std.shape
+            )
+        )
+
         self._mean[:] = mean
         self._std[:] = std
         self._mean_sq[:] = self._calc_mean_sq(self._mean, self._std)
@@ -83,7 +96,7 @@ class Normalizer(torch.nn.Module):
     def unnormalize(self, norm_x):
         x = norm_x * self._std + self._mean
         return x.type(self.dtype)
-    
+
     def _calc_std(self, mean, mean_sq):
         var = mean_sq - torch.square(mean)
         var = torch.clamp_min(var, self._min_var)
@@ -97,22 +110,37 @@ class Normalizer(torch.nn.Module):
         return mean_sq
 
     def _build_params(self, shape, device, init_mean, init_std):
-        self._count = torch.nn.Parameter(torch.zeros([1], device=device, requires_grad=False, dtype=torch.long), requires_grad=False)
-        self._mean = torch.nn.Parameter(torch.zeros(shape, device=device, requires_grad=False, dtype=self.dtype), requires_grad=False)
-        self._std = torch.nn.Parameter(torch.ones(shape, device=device, requires_grad=False, dtype=self.dtype), requires_grad=False)
+        self._count = torch.nn.Parameter(
+            torch.zeros([1], device=device, requires_grad=False, dtype=torch.long),
+            requires_grad=False,
+        )
+        self._mean = torch.nn.Parameter(
+            torch.zeros(shape, device=device, requires_grad=False, dtype=self.dtype),
+            requires_grad=False,
+        )
+        self._std = torch.nn.Parameter(
+            torch.ones(shape, device=device, requires_grad=False, dtype=self.dtype),
+            requires_grad=False,
+        )
 
         if init_mean is not None:
-            assert init_mean.shape == shape, \
-            Logger.print('Normalizer init mean shape mismatch, expecting {:d}, but got {:d}'.shape(shape, init_mean.shape))
+            assert init_mean.shape == shape, Logger.print(
+                "Normalizer init mean shape mismatch, expecting {:d}, but got {:d}".shape(
+                    shape, init_mean.shape
+                )
+            )
             self._mean[:] = init_mean
 
         if init_std is not None:
-            assert init_std.shape == shape, \
-            Logger.print('Normalizer init std shape mismatch, expecting {:d}, but got {:d}'.format(shape, init_std.shape))
+            assert init_std.shape == shape, Logger.print(
+                "Normalizer init std shape mismatch, expecting {:d}, but got {:d}".format(
+                    shape, init_std.shape
+                )
+            )
             self._std[:] = init_std
 
         self._mean_sq = None
-        
+
         self._new_count = 0
         self._new_sum = torch.zeros_like(self._mean)
         self._new_sum_sq = torch.zeros_like(self._mean)

@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append(".")
 
 import numpy as np
@@ -18,13 +19,15 @@ y_key = "Test_Return"
 std_key = None
 plot_title = "Performance"
 
+
 def filter_data(x, window_size):
     n = len(x)
     filter_n = n // window_size
-    x = x[:filter_n * window_size]
+    x = x[: filter_n * window_size]
     x = np.reshape(x, [filter_n, window_size])
     filter_x = np.mean(x, axis=-1)
     return filter_x
+
 
 plt.figure(figsize=(5.5 * 0.8, 4 * 0.8))
 
@@ -50,7 +53,7 @@ for f, file_group in enumerate(files):
         with open(file, "r") as file_data:
             clean_lines = [line.replace(",", "\t") for line in file_data]
             data = np.genfromtxt(clean_lines, delimiter=None, dtype=None, names=True)
-        
+
         data_x_key = x_key
         data_y_key = y_key
         curr_window_size = filter_window_size
@@ -67,7 +70,7 @@ for f, file_group in enumerate(files):
                 stds = filter_data(stds, curr_window_size)
                 std_data.append(stds)
 
-            #ys /= 20 * 30
+            # ys /= 20 * 30
 
             x_data.append(xs)
             y_data.append(ys)
@@ -76,14 +79,19 @@ for f, file_group in enumerate(files):
     label = os.path.splitext(label)[0]
 
     line_col = None
-    curr_min_x, curr_max_x, _, _ = PlotUtil.plot_line(x_data, y_data, std_data, label, color=line_col,
-                                                      draw_band=draw_band)
+    curr_min_x, curr_max_x, _, _ = PlotUtil.plot_line(
+        x_data, y_data, std_data, label, color=line_col, draw_band=draw_band
+    )
 
     min_len = int(reduce(lambda x, y: np.minimum(x, len(y)), x_data, np.inf))
     x_final = x_data[0][min_len - 1]
     y_final = np.array([y[min_len - 1] for y in y_data])
-    print("Final value: {:.2f}, {:.5f} +/- {:.5f}".format(x_final, np.mean(y_final), np.std(y_final)))
-    
+    print(
+        "Final value: {:.2f}, {:.5f} +/- {:.5f}".format(
+            x_final, np.mean(y_final), np.std(y_final)
+        )
+    )
+
     min_x = min(curr_min_x, min_x)
     max_x = max(curr_max_x, max_x)
 
@@ -92,9 +100,9 @@ ax = plt.gca()
 
 plt.xlabel(x_key)
 plt.ylabel(y_key)
-plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
+plt.ticklabel_format(style="sci", axis="x", scilimits=(0, 0))
 
-plt.grid(linestyle='dotted')
+plt.grid(linestyle="dotted")
 ax.xaxis.grid(True)
 ax.yaxis.grid(True)
 

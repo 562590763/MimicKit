@@ -4,8 +4,17 @@ import torch
 import util.mp_util as mp_util
 from util.logger import Logger
 
+
 class DiffNormalizer(torch.nn.Module):
-    def __init__(self, shape, device, init_mean=None, min_diff=1e-4, clip=np.inf, dtype=torch.float):
+    def __init__(
+        self,
+        shape,
+        device,
+        init_mean=None,
+        min_diff=1e-4,
+        clip=np.inf,
+        dtype=torch.float,
+    ):
         super().__init__()
 
         self._min_diff = min_diff
@@ -63,12 +72,21 @@ class DiffNormalizer(torch.nn.Module):
         return x.type(self.dtype)
 
     def _build_params(self, shape, device, init_mean):
-        self._count = torch.nn.Parameter(torch.zeros([1], device=device, requires_grad=False, dtype=torch.long), requires_grad=False)
-        self._mean_abs = torch.nn.Parameter(torch.ones(shape, device=device, requires_grad=False, dtype=self.dtype), requires_grad=False)
+        self._count = torch.nn.Parameter(
+            torch.zeros([1], device=device, requires_grad=False, dtype=torch.long),
+            requires_grad=False,
+        )
+        self._mean_abs = torch.nn.Parameter(
+            torch.ones(shape, device=device, requires_grad=False, dtype=self.dtype),
+            requires_grad=False,
+        )
 
         if init_mean is not None:
-            assert init_mean.shape == shape, \
-            Logger.print('Normalizer init mean shape mismatch, expecting {:d}, but got {:d}'.shape(shape, init_mean.shape))
+            assert init_mean.shape == shape, Logger.print(
+                "Normalizer init mean shape mismatch, expecting {:d}, but got {:d}".shape(
+                    shape, init_mean.shape
+                )
+            )
             self._mean_abs[:] = init_mean
 
         self._new_count = 0

@@ -5,15 +5,18 @@ import numpy as np
 
 import util.torch_util as torch_util
 
+
 class EnvMode(enum.Enum):
     TRAIN = 0
     TEST = 1
+
 
 class DoneFlags(enum.Enum):
     NULL = 0
     FAIL = 1
     SUCC = 2
     TIME = 3
+
 
 class BaseEnv(abc.ABC):
     def __init__(self, visualize):
@@ -22,15 +25,15 @@ class BaseEnv(abc.ABC):
         self._action_space = None
         self._diagnostics = dict()
         return
-    
+
     @abc.abstractmethod
     def reset(self, env_ids=None):
         return
-    
+
     @abc.abstractmethod
     def step(self, action):
         return
-    
+
     def get_obs_space(self):
         obs, _ = self.reset()
         obs_shape = list(obs.shape[1:])
@@ -61,9 +64,9 @@ class BaseEnv(abc.ABC):
 
     def get_visualize(self):
         return self._visualize
-    
+
     def get_env_time(self, env_ids=None):
         return 0.0
-    
+
     def get_diagnostics(self):
         return self._diagnostics
